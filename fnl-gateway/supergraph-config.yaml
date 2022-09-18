@@ -1,0 +1,11 @@
+
+federation_version: 2
+subgraphs:
+  books_api:
+    routing_url: http://0.0.0.0:8082/graphql
+    schema:
+      subgraph_url: http://0.0.0.0:8082/graphql
+  uaa_service:
+    routing_url: http://0.0.0.0:8081/graphql
+    schema:
+      subgraph_url: http://0.0.0.0:8081/graphql

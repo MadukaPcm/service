@@ -1,0 +1,296 @@
+
+schema
+  @link(url: "https://specs.apollo.dev/link/v1.0")
+  @link(url: "https://specs.apollo.dev/join/v0.2", for: EXECUTION)
+{
+  query: Query
+  mutation: Mutation
+}
+
+directive @join__field(graph: join__Graph!, requires: join__FieldSet, provides: join__FieldSet, type: String, external: Boolean, override: String, usedOverridden: Boolean) repeatable on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @join__graph(name: String!, url: String!) on ENUM_VALUE
+
+directive @join__implements(graph: join__Graph!, interface: String!) repeatable on OBJECT | INTERFACE
+
+directive @join__type(graph: join__Graph!, key: join__FieldSet, extension: Boolean! = false, resolvable: Boolean! = true) repeatable on OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT | SCALAR
+
+directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+
+type ArchiveAccount
+  @join__type(graph: UAA_SERVICE)
+{
+  success: Boolean
+  errors: ExpectedErrorType
+}
+
+input BookInput
+  @join__type(graph: BOOKS_API)
+{
+  id: ID
+  title: String
+  author: String
+  yearPublished: String
+  review: Int
+}
+
+type BookType
+  @join__type(graph: BOOKS_API, key: "id")
+{
+  id: ID!
+  title: String!
+  author: String!
+  yearPublished: String!
+  review: Int!
+}
+
+type CreateBook
+  @join__type(graph: BOOKS_API)
+{
+  book: BookType
+}
+
+scalar DateTime
+  @join__type(graph: UAA_SERVICE)
+
+type DeleteAccount
+  @join__type(graph: UAA_SERVICE)
+{
+  success: Boolean
+  errors: ExpectedErrorType
+}
+
+type DeleteBook
+  @join__type(graph: BOOKS_API)
+{
+  book: BookType
+}
+
+scalar ExpectedErrorType
+  @join__type(graph: UAA_SERVICE)
+
+scalar GenericScalar
+  @join__type(graph: UAA_SERVICE)
+
+scalar join__FieldSet
+
+enum join__Graph {
+  BOOKS_API @join__graph(name: "books_api", url: "http://0.0.0.0:8082/graphql")
+  UAA_SERVICE @join__graph(name: "uaa_service", url: "http://0.0.0.0:8081/graphql")
+}
+
+scalar link__Import
+
+enum link__Purpose {
+  """
+  `SECURITY` features provide metadata necessary to securely resolve fields.
+  """
+  SECURITY
+
+  """
+  `EXECUTION` features provide metadata necessary for operation execution.
+  """
+  EXECUTION
+}
+
+type Mutation
+  @join__type(graph: BOOKS_API)
+  @join__type(graph: UAA_SERVICE)
+{
+  createBook(bookData: BookInput!): CreateBook @join__field(graph: BOOKS_API)
+  updateBook(bookData: BookInput!): UpdateBook @join__field(graph: BOOKS_API)
+  deleteBook(id: ID): DeleteBook @join__field(graph: BOOKS_API)
+  register(email: String!, username: String!, password1: String!, password2: String!): Register @join__field(graph: UAA_SERVICE)
+  verifyAccount(token: String!): VerifyAccount @join__field(graph: UAA_SERVICE)
+  resendActivationEmail(email: String!): ResendActivationEmail @join__field(graph: UAA_SERVICE)
+  sendPasswordResetEmail(email: String!): SendPasswordResetEmail @join__field(graph: UAA_SERVICE)
+  passwordReset(token: String!, newPassword1: String!, newPassword2: String!): PasswordReset @join__field(graph: UAA_SERVICE)
+  passwordChange(oldPassword: String!, newPassword1: String!, newPassword2: String!): PasswordChange @join__field(graph: UAA_SERVICE)
+  archiveAccount(password: String!): ArchiveAccount @join__field(graph: UAA_SERVICE)
+  deleteAccount(password: String!): DeleteAccount @join__field(graph: UAA_SERVICE)
+  updateAccount(firstName: String, lastName: String): UpdateAccount @join__field(graph: UAA_SERVICE)
+  sendSecondaryEmailActivation(email: String!, password: String!): SendSecondaryEmailActivation @join__field(graph: UAA_SERVICE)
+  verifySecondaryEmail(token: String!): VerifySecondaryEmail @join__field(graph: UAA_SERVICE)
+  swapEmails(password: String!): SwapEmails @join__field(graph: UAA_SERVICE)
+  tokenAuth(password: String!, email: String, username: String): ObtainJSONWebToken @join__field(graph: UAA_SERVICE)
+  verifyToken(token: String!): VerifyToken @join__field(graph: UAA_SERVICE)
+  refreshToken(refreshToken: String!): RefreshToken @join__field(graph: UAA_SERVICE)
+  revokeToken(refreshToken: String!): RevokeToken @join__field(graph: UAA_SERVICE)
+}
+
+interface Node
+  @join__type(graph: UAA_SERVICE)
+{
+  id: ID!
+}
+
+type ObtainJSONWebToken
+  @join__type(graph: UAA_SERVICE)
+{
+  token: String
+  success: Boolean
+  errors: ExpectedErrorType
+  user: UserNode
+  unarchiving: Boolean
+  refreshToken: String
+}
+
+type PageInfo
+  @join__type(graph: UAA_SERVICE)
+{
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+type PasswordChange
+  @join__type(graph: UAA_SERVICE)
+{
+  success: Boolean
+  errors: ExpectedErrorType
+  refreshToken: String
+  token: String
+}
+
+type PasswordReset
+  @join__type(graph: UAA_SERVICE)
+{
+  success: Boolean
+  errors: ExpectedErrorType
+}
+
+type Query
+  @join__type(graph: BOOKS_API)
+  @join__type(graph: UAA_SERVICE)
+{
+  allBooks: [BookType] @join__field(graph: BOOKS_API)
+  book(bookId: Int): BookType @join__field(graph: BOOKS_API)
+  me: UserNode @join__field(graph: UAA_SERVICE)
+  user(id: ID!): UserNode @join__field(graph: UAA_SERVICE)
+  users(offset: Int, before: String, after: String, first: Int, last: Int, email: String, username: String, username_Icontains: String, username_Istartswith: String, isActive: Boolean, status_Archived: Boolean, status_Verified: Boolean, status_SecondaryEmail: String): UserNodeConnection @join__field(graph: UAA_SERVICE)
+}
+
+type RefreshToken
+  @join__type(graph: UAA_SERVICE)
+{
+  token: String
+  payload: GenericScalar
+  success: Boolean
+  errors: ExpectedErrorType
+  refreshToken: String
+}
+
+type Register
+  @join__type(graph: UAA_SERVICE)
+{
+  success: Boolean
+  errors: ExpectedErrorType
+  refreshToken: String
+  token: String
+}
+
+type ResendActivationEmail
+  @join__type(graph: UAA_SERVICE)
+{
+  success: Boolean
+  errors: ExpectedErrorType
+}
+
+type RevokeToken
+  @join__type(graph: UAA_SERVICE)
+{
+  revoked: Int
+  success: Boolean
+  errors: ExpectedErrorType
+}
+
+type SendPasswordResetEmail
+  @join__type(graph: UAA_SERVICE)
+{
+  success: Boolean
+  errors: ExpectedErrorType
+}
+
+type SendSecondaryEmailActivation
+  @join__type(graph: UAA_SERVICE)
+{
+  success: Boolean
+  errors: ExpectedErrorType
+}
+
+type SwapEmails
+  @join__type(graph: UAA_SERVICE)
+{
+  success: Boolean
+  errors: ExpectedErrorType
+}
+
+type UpdateAccount
+  @join__type(graph: UAA_SERVICE)
+{
+  success: Boolean
+  errors: ExpectedErrorType
+}
+
+type UpdateBook
+  @join__type(graph: BOOKS_API)
+{
+  book: BookType
+}
+
+type UserNode implements Node
+  @join__implements(graph: UAA_SERVICE, interface: "Node")
+  @join__type(graph: UAA_SERVICE)
+{
+  id: ID!
+  lastLogin: DateTime
+  username: String!
+  firstName: String!
+  lastName: String!
+  isStaff: Boolean!
+  isActive: Boolean!
+  dateJoined: DateTime!
+  email: String!
+  empNo: String
+  pk: Int
+  archived: Boolean
+  verified: Boolean
+  secondaryEmail: String
+}
+
+type UserNodeConnection
+  @join__type(graph: UAA_SERVICE)
+{
+  pageInfo: PageInfo!
+  edges: [UserNodeEdge]!
+}
+
+type UserNodeEdge
+  @join__type(graph: UAA_SERVICE)
+{
+  node: UserNode
+  cursor: String!
+}
+
+type VerifyAccount
+  @join__type(graph: UAA_SERVICE)
+{
+  success: Boolean
+  errors: ExpectedErrorType
+}
+
+type VerifySecondaryEmail
+  @join__type(graph: UAA_SERVICE)
+{
+  success: Boolean
+  errors: ExpectedErrorType
+}
+
+type VerifyToken
+  @join__type(graph: UAA_SERVICE)
+{
+  payload: GenericScalar
+  success: Boolean
+  errors: ExpectedErrorType
+}
